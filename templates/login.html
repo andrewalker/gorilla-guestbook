@@ -15,9 +15,11 @@
     <div class="row">
         <div class="span4 offset4 well">
             <legend>Efetue login</legend>
+            {{if .wrong_password}}
             <div class="alert alert-error">
                 Usuário ou senha inválidos!
             </div>
+            {{end}}
             <form method="post" action="/do_login" accept-charset="UTF-8">
                 <input type="text" id="username" class="span4" name="Username" placeholder="Usuário">
                 <input type="password" id="password" class="span4" name="Password" placeholder="Senha">

@@ -1,12 +1,15 @@
 package main
 
 import (
+    "reflect"
     "fmt"
     "net/http"
     "text/template"
     "github.com/gorilla/mux"
     "github.com/gorilla/schema"
     "github.com/gorilla/sessions"
+    "database/sql"
+    _ "github.com/lib/pq"
 )
 
 type Login struct {
@@ -19,61 +22,56 @@ type Comment struct {
     Comment string
 }
 
+var db *sql.DB
 var decoder       = schema.NewDecoder()
 var store         = sessions.NewCookieStore([]byte("frase-ultra-secreta-de-encriptacao"))
 var homeTemplate  = template.Must(template.New("home").ParseFiles("templates/home.html"))
 var loginTemplate = template.Must(template.New("login").ParseFiles("templates/login.html"))
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
-    if err := homeTemplate.ExecuteTemplate(w, "home", nil); err != nil {
+    session, _ := store.Get(r, "auth-session")
+    username := session.Values["username"]
+    data := make(map[string]interface{})
+    if reflect.TypeOf(username).String() == "string" {
+        data["logged_in"] = true
+        data["username"] = username
+    }
+    if err := homeTemplate.ExecuteTemplate(w, "home", data); err != nil {
         fmt.Println(err);
     }
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
-    if err := loginTemplate.ExecuteTemplate(w, "login", nil); err != nil {
+    query := r.URL.Query()
+    data := make(map[string]interface{})
+
+    data["wrong_password"] = len(query["wrong_password"]) > 0 && query["wrong_password"][0] == "1"
+
+    if err := loginTemplate.ExecuteTemplate(w, "login", data); err != nil {
         fmt.Println(err);
     }
 }
 
 func DoLoginHandler(w http.ResponseWriter, r *http.Request) {
-    r.ParseForm();
+    var password string
+    page := "/login"
     login := new(Login)
-    decoder.Decode(login, r.PostForm)
-
     session, _ := store.Get(r, "auth-session")
 
-    switch login.Username {
-        case "andre": {
-            if login.Password == "123" {
-                session.Values["username"] = login.Username
-                fmt.Println("Usuário é André.");
-            } else {
-                fmt.Println("Senha errada.");
-            }
-        }
-        case "pedro": {
-            if login.Password == "123" {
-                session.Values["username"] = login.Username
-                fmt.Println("Usuário é Pedro.");
-            } else {
-                fmt.Println("Senha errada.");
-            }
-        }
-        case "lucas": {
-            if login.Password == "123" {
-                session.Values["username"] = login.Username
-                fmt.Println("Usuário é Lucas.");
-            } else {
-                fmt.Println("Senha errada.");
-            }
-        }
-        default: fmt.Println("O usuário não existe.");
+    r.ParseForm();
+    decoder.Decode(login, r.PostForm)
+
+    err := db.QueryRow("SELECT password FROM users WHERE username=?", login.Username).Scan(&password)
+
+    if err == sql.ErrNoRows {
+        page = page + "?wrong_password=1"
+    } else {
+        session.Values["username"] = login.Username
     }
 
     session.Save(r, w)
 
-    http.Redirect(w, r, "/login", http.StatusFound)
+    http.Redirect(w, r, page, http.StatusFound)
 }
 
 func GuestbookHandler(w http.ResponseWriter, r *http.Request) {
@@ -88,6 +86,13 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+    var err error
+    db, err = sql.Open("postgres", "user=andre dbname=guestbook")
+
+    if err != nil {
+        fmt.Println(err)
+    }
+
     r := mux.NewRouter()
 
     r.HandleFunc("/",          HomeHandler)

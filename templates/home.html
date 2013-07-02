@@ -1,3 +1,6 @@
 {{define "home"}}
 <p>Home</p>
+{{if .logged_in}}
+    <p>Olá <strong>{{.username}}</strong></p>
+{{end}}
 {{end}}
