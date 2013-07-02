@@ -71,7 +71,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
     }
 
     if err := homeTemplate.ExecuteTemplate(w, "home", data); err != nil {
-        fmt.Println(err);
+        fmt.Println(err)
     }
 }
 
@@ -82,7 +82,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
     data["wrong_password"] = len(query["wrong_password"]) > 0 && query["wrong_password"][0] == "1"
 
     if err := loginTemplate.ExecuteTemplate(w, "login", data); err != nil {
-        fmt.Println(err);
+        fmt.Println(err)
     }
 }
 
@@ -90,8 +90,6 @@ func DoLoginHandler(w http.ResponseWriter, r *http.Request) {
     var count int
     page := "/"
     login := new(Login)
-    session, _ := store.Get(r, "auth-session")
-
     r.ParseForm();
     decoder.Decode(login, r.PostForm)
 
@@ -100,10 +98,10 @@ func DoLoginHandler(w http.ResponseWriter, r *http.Request) {
     if count == 0 {
         page = "/login?wrong_password=1"
     } else {
+        session, _ := store.Get(r, "auth-session")
         session.Values["username"] = login.Username
+        session.Save(r, w)
     }
-
-    session.Save(r, w)
 
     http.Redirect(w, r, page, http.StatusFound)
 }
