@@ -3,6 +3,7 @@ package main
 import (
     "fmt"
     "net/http"
+    "text/template"
     "github.com/gorilla/mux"
 )
 
@@ -16,21 +17,29 @@ type Comment struct {
     comment string
 }
 
+var homeTemplate  = template.Must(template.New("home").ParseFiles("templates/home.html"))
+var loginTemplate = template.Must(template.New("login").ParseFiles("templates/login.html"))
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
-    fmt.Fprintf(w, "Home handler");
+    if err := homeTemplate.ExecuteTemplate(w, "home", nil); err != nil {
+        fmt.Println(err);
+    }
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
-    fmt.Fprintf(w, "Login handler");
+    if err := loginTemplate.ExecuteTemplate(w, "login", nil); err != nil {
+        fmt.Println(err);
+    }
 }
 
 func GuestbookHandler(w http.ResponseWriter, r *http.Request) {
-    fmt.Fprintf(w, "Guestbook handler");
+    // após gravar no guestbook, redirecione
+    http.Redirect(w, r, "/", http.StatusFound)
 }
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
-    fmt.Fprintf(w, "Logout handler");
+    // após logout, redirecione
+    http.Redirect(w, r, "/", http.StatusFound)
 }
 
 func main() {
