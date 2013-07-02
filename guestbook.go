@@ -6,6 +6,7 @@ import (
     "text/template"
     "github.com/gorilla/mux"
     "github.com/gorilla/schema"
+    "github.com/gorilla/sessions"
 )
 
 type Login struct {
@@ -19,6 +20,7 @@ type Comment struct {
 }
 
 var decoder       = schema.NewDecoder()
+var store         = sessions.NewCookieStore([]byte("frase-ultra-secreta-de-encriptacao"))
 var homeTemplate  = template.Must(template.New("home").ParseFiles("templates/home.html"))
 var loginTemplate = template.Must(template.New("login").ParseFiles("templates/login.html"))
 
@@ -39,9 +41,12 @@ func DoLoginHandler(w http.ResponseWriter, r *http.Request) {
     login := new(Login)
     decoder.Decode(login, r.PostForm)
 
+    session, _ := store.Get(r, "auth-session")
+
     switch login.Username {
         case "andre": {
             if login.Password == "123" {
+                session.Values["username"] = login.Username
                 fmt.Println("Usuário é André.");
             } else {
                 fmt.Println("Senha errada.");
@@ -49,6 +54,7 @@ func DoLoginHandler(w http.ResponseWriter, r *http.Request) {
         }
         case "pedro": {
             if login.Password == "123" {
+                session.Values["username"] = login.Username
                 fmt.Println("Usuário é Pedro.");
             } else {
                 fmt.Println("Senha errada.");
@@ -56,6 +62,7 @@ func DoLoginHandler(w http.ResponseWriter, r *http.Request) {
         }
         case "lucas": {
             if login.Password == "123" {
+                session.Values["username"] = login.Username
                 fmt.Println("Usuário é Lucas.");
             } else {
                 fmt.Println("Senha errada.");
@@ -63,6 +70,8 @@ func DoLoginHandler(w http.ResponseWriter, r *http.Request) {
         }
         default: fmt.Println("O usuário não existe.");
     }
+
+    session.Save(r, w)
 
     http.Redirect(w, r, "/login", http.StatusFound)
 }
@@ -74,6 +83,7 @@ func GuestbookHandler(w http.ResponseWriter, r *http.Request) {
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
     // após logout, redirecione
+    http.SetCookie(w, &http.Cookie{Name: "auth-session", MaxAge: -1, Path: "/"})
     http.Redirect(w, r, "/", http.StatusFound)
 }
 
