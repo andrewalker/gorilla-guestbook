@@ -1,6 +1,55 @@
 {{define "home"}}
-<p>Home</p>
-{{if .logged_in}}
-    <p>Olá <strong>{{.username}}</strong></p>
-{{end}}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <title>Guestbook!</title>
+    <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
+    <style type="text/css">
+        .container {
+            margin-top: 60px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="span6 offset3">
+        <div class="row">
+            <h1>Home</h1>
+        </div>
+        <br/><br/>
+        <div class="row">
+            {{if .logged_in}}
+            <p class="lead">Olá, <strong>{{.username}}</strong>!</p>
+            <p>Quando acabar de comentar, <a href="/logout">efetue logout</a></p>
+            {{else}}
+            <p class="lead">Olá, <strong>visitante</strong>!</p>
+            <p>Para comentar, <a href="/login">efetue login</a></p>
+            {{end}}
+        </div>
+        {{with .rows}}
+            {{range .Rows}}
+            <div class="row">
+                {{.Comment}}
+                <p>Escrito por {{.User}} em {{.Written_at}}.</p>
+            </div>
+            {{end}}
+        {{end}}
+
+        {{if .logged_in}}
+        <div class="row">
+            <div class="well">
+                <legend>Grave seu recado</legend>
+                <p>Escreva seu comentário, <strong>{{.username}}</strong></p>
+                <form method="post" action="/guestbook" accept-charset="UTF-8">
+                    <textarea name="comment"></textarea>
+                    <button type="submit" name="submit" class="btn btn-info text-right">Enviar</button>
+                </form>
+            </div>
+        </div>
+        {{end}}
+    </div>
+</div>
+</body>
+</html>
 {{end}}
