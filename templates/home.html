@@ -27,24 +27,29 @@
             <p>Para comentar, <a href="/login">efetue login</a></p>
             {{end}}
         </div>
+
+        <ul>
         {{with .rows}}
             {{range .Rows}}
-            <div class="row">
-                {{.Comment}}
-                <p>Escrito por {{.User}} em {{.Written_at}}.</p>
-            </div>
+            <li>
+                {{.Comment}}<br/>
+                <em>Escrito por {{.User}} em {{.Written_at}}.</em>
+            </li>
             {{end}}
         {{end}}
+        </ul>
 
         {{if .logged_in}}
         <div class="row">
             <div class="well">
                 <legend>Grave seu recado</legend>
-                <p>Escreva seu comentário, <strong>{{.username}}</strong></p>
+                <p>Escreva seu comentário, <strong>{{.username}}</strong>:</p>
+                <div class="container-fluid"><div class="row-fluid">
                 <form method="post" action="/guestbook" accept-charset="UTF-8">
-                    <textarea name="comment"></textarea>
-                    <button type="submit" name="submit" class="btn btn-info text-right">Enviar</button>
+                    <textarea name="comment" class="span12"></textarea>
+                    <button type="submit" name="submit" class="btn btn-info pull-right">Enviar</button>
                 </form>
+                </div></div>
             </div>
         </div>
         {{end}}
