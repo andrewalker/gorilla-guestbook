@@ -15,18 +15,16 @@
 <div class="container">
     <div class="span6 offset3">
         <div class="row">
+            <div class="pull-right">
+                {{if .logged_in}}
+                <a href="/logout">logout</a>
+                {{else}}
+                <a href="/login">login</a>
+                {{end}}
+            </div>
             <h1>Home</h1>
         </div>
         <br/><br/>
-        <div class="row">
-            {{if .logged_in}}
-            <p class="lead">Olá, <strong>{{.username}}</strong>!</p>
-            <p>Quando acabar de comentar, <a href="/logout">efetue logout</a></p>
-            {{else}}
-            <p class="lead">Olá, <strong>visitante</strong>!</p>
-            <p>Para comentar, <a href="/login">efetue login</a></p>
-            {{end}}
-        </div>
 
         <ul>
         {{with .rows}}
